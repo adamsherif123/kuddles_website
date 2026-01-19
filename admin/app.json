@@ -1,0 +1,8 @@
+{
+    "expo": {
+      "name": "Kuddles Admin",
+      "slug": "kuddles-admin",
+      "platforms": ["ios", "android", "web"]
+    }
+  }
+  
