@@ -20,13 +20,11 @@ export function ProductDetail({ product }: { product: Product }) {
 
   const safeColors = useMemo(() => {
     const colors = Array.isArray((product as any).colors) ? (product as any).colors : []
-    // if no colors exist, create a dummy one so UI doesn't crash
     return colors.length ? colors : [{ name: "Default", hex: "#e5e7eb", inStock: true }]
   }, [product])
 
   const safeSizes = useMemo(() => {
     const sizes = Array.isArray((product as any).sizes) ? (product as any).sizes : []
-    // if no sizes exist, create a dummy one
     return sizes.length ? sizes : [{ label: "One Size", inStockByColor: { Default: true } }]
   }, [product])
 
@@ -44,29 +42,29 @@ export function ProductDetail({ product }: { product: Product }) {
 
   // Get available stock quantity for selected color and size
   const getAvailableStock = useMemo(() => {
-    if (!product.stockBySize) return Infinity // If no stock data, allow unlimited
-    
-    // Try different key formats: "color-size", "size", or "color"
+    if (!product.stockBySize) return Infinity
+
     const stockKey1 = `${selectedColor}-${selectedSize}`
     const stockKey2 = selectedSize
     const stockKey3 = selectedColor
-    
-    const stock = product.stockBySize[stockKey1] ?? 
-                  product.stockBySize[stockKey2] ?? 
-                  product.stockBySize[stockKey3] ?? 
-                  0
-    
-    return Math.max(0, stock) // Ensure non-negative
-  }, [product.stockBySize, selectedColor, selectedSize])
 
-  // Reset quantity to 1 when color/size changes, or cap it if it exceeds available stock
+    const stock =
+      (product as any).stockBySize?.[stockKey1] ??
+      (product as any).stockBySize?.[stockKey2] ??
+      (product as any).stockBySize?.[stockKey3] ??
+      0
+
+    return Math.max(0, stock)
+  }, [product, selectedColor, selectedSize])
+
+  // Reset quantity to 1 when selection changes
   useEffect(() => {
-    setQuantity(1) // Reset to 1 when selection changes
+    setQuantity(1)
   }, [selectedColor, selectedSize])
 
   // Ensure quantity doesn't exceed available stock
   useEffect(() => {
-    if (quantity > getAvailableStock && getAvailableStock > 0) {
+    if (getAvailableStock !== Infinity && quantity > getAvailableStock && getAvailableStock > 0) {
       setQuantity(getAvailableStock)
     }
   }, [getAvailableStock, quantity])
@@ -81,7 +79,7 @@ export function ProductDetail({ product }: { product: Product }) {
     if (!isInStock || quantity > getAvailableStock || quantity <= 0) return
     addItem({
       id: `${product.id}-${selectedColor}-${selectedSize}`,
-      productId: product.id, // Store product ID to fetch stock data
+      productId: product.id,
       name: product.name,
       price: product.price,
       image: currentImage.url || "/placeholder.svg",
@@ -143,27 +141,6 @@ export function ProductDetail({ product }: { product: Product }) {
             <p className="text-3xl font-bold text-[var(--brand-coral)] mb-6">{product.price.toFixed(2)} EGP</p>
             <p className="text-muted-foreground mb-8 leading-relaxed">{product.description}</p>
 
-            {/* Color Selector */}
-            {/* <div className="mb-6">
-              <div className="text-sm font-semibold mb-3">
-                Color: <span className="font-normal text-muted-foreground">{selectedColor}</span>
-              </div>
-              <div className="flex flex-wrap gap-3">
-                {safeColors.map((color: any) => (
-                  <button
-                    key={color.name}
-                    onClick={() => setSelectedColor(color.name)}
-                    disabled={color.inStock === false}
-                    className={`w-12 h-12 rounded-full border-2 transition-all ${
-                      selectedColor === color.name ? "border-[var(--brand-coral)] scale-110" : "border-border"
-                    } ${color.inStock === false ? "opacity-30 cursor-not-allowed" : "hover:scale-110"}`}
-                    style={{ backgroundColor: color.hex ?? "#e5e7eb" }}
-                    title={color.name}
-                  />
-                ))}
-              </div>
-            </div> */}
-
             {/* Size Selector */}
             <div className="mb-6">
               <div className="text-sm font-semibold mb-3">
@@ -190,16 +167,19 @@ export function ProductDetail({ product }: { product: Product }) {
               </div>
             </div>
 
-            {/* Quantity */}
+            {/* Quantity (stock label only) */}
             <div className="mb-6">
               <div className="text-sm font-semibold mb-3">
-                Quantity
-                {getAvailableStock !== Infinity && (
-                  <span className="font-normal text-muted-foreground ml-2">
-                    ({getAvailableStock} available)
-                  </span>
-                )}
+                Quantity{" "}
+                <span className="font-normal ml-2">
+                  {isInStock ? (
+                    <span className="text-green-600">In stock</span>
+                  ) : (
+                    <span className="text-red-600">Out of stock</span>
+                  )}
+                </span>
               </div>
+
               <div className="flex items-center gap-3">
                 <Button
                   variant="outline"
@@ -209,11 +189,13 @@ export function ProductDetail({ product }: { product: Product }) {
                 >
                   <Minus className="h-4 w-4" />
                 </Button>
+
                 <span className="text-lg font-medium w-12 text-center">{quantity}</span>
-                <Button 
-                  variant="outline" 
-                  size="icon" 
-                  onClick={() => setQuantity(Math.min(getAvailableStock, quantity + 1))} 
+
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setQuantity(Math.min(getAvailableStock, quantity + 1))}
                   disabled={!isInStock || quantity >= getAvailableStock}
                 >
                   <Plus className="h-4 w-4" />
@@ -235,12 +217,12 @@ export function ProductDetail({ product }: { product: Product }) {
                 <Heart className="h-5 w-5" />
               </Button>
             </div>
-        
-            {/* Size chart */}
+
+            {/* Size charts */}
             <div className="mb-8">
               <p className="text-sm font-semibold mb-3">Size charts</p>
 
-              <div className="grid grid-cols-3 gap-4 max-w-md">
+              <div className="grid grid-cols-2 gap-3 max-w-sm">
                 {[
                   { src: "/images/size-chart1.png", label: "Sweaters size chart" },
                   { src: "/images/size-chart2.png", label: "Pants size chart" },
@@ -254,13 +236,9 @@ export function ProductDetail({ product }: { product: Product }) {
                   >
                     <p className="text-[11px] font-medium text-muted-foreground mb-1">{item.label}</p>
 
-                    {/* Smaller preview */}
                     <div className="aspect-square w-full rounded-xl overflow-hidden bg-white border">
-                      <img
-                        src={item.src}
-                        alt={item.label}
-                        className="w-full h-full object-contain"
-                      />
+                      {/* use <img> so it never gets optimized/cropped weird */}
+                      <img src={item.src} alt={item.label} className="w-full h-full object-contain" />
                     </div>
 
                     <p className="mt-1 text-[11px] text-muted-foreground">Tap to expand</p>
@@ -277,7 +255,7 @@ export function ProductDetail({ product }: { product: Product }) {
                   aria-modal="true"
                 >
                   <div
-                    className="relative w-full max-w-4xl rounded-2xl bg-white p-3"
+                    className="relative w-full max-w-5xl rounded-2xl bg-white p-3"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <button
@@ -290,22 +268,18 @@ export function ProductDetail({ product }: { product: Product }) {
 
                     <p className="text-sm font-semibold mb-2 pr-10">{openChart.label}</p>
 
+                    {/* No scrolling: fit to viewport */}
                     <div className="flex items-center justify-center">
                       <img
                         src={openChart.src}
                         alt={openChart.label}
-                        className="max-h-[85vh] max-w-[90vw] object-contain"
+                        className="h-[80vh] w-auto max-w-[92vw] object-contain"
                       />
                     </div>
-
-                    <p className="mt-2 text-xs text-muted-foreground">
-                      Click outside (or ✕) to close.
-                    </p>
                   </div>
                 </div>
               )}
             </div>
-
 
             {/* Additional Info */}
             <Accordion type="single" collapsible className="w-full">
@@ -317,13 +291,14 @@ export function ProductDetail({ product }: { product: Product }) {
                   </div>
                 </AccordionTrigger>
                 <AccordionContent>
-                <div className="text-sm text-muted-foreground space-y-2">
-                  <p>• Free standard shipping</p>
-                  <p>• 2-5 business days</p>
-                  <p>• 30-day return policy</p>
-                </div>
-              </AccordionContent>
+                  <div className="text-sm text-muted-foreground space-y-2">
+                    <p>• Free standard shipping</p>
+                    <p>• 2-5 business days</p>
+                    <p>• 30-day return policy</p>
+                  </div>
+                </AccordionContent>
               </AccordionItem>
+
               <AccordionItem value="care">
                 <AccordionTrigger>
                   <div className="flex items-center gap-2">
@@ -340,9 +315,7 @@ export function ProductDetail({ product }: { product: Product }) {
                   >
                     Open Care Instructions (PDF)
                   </a>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    Opens in a new tab.
-                  </p>
+                  <p className="mt-2 text-sm text-muted-foreground">Opens in a new tab.</p>
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
@@ -352,11 +325,3 @@ export function ProductDetail({ product }: { product: Product }) {
     </main>
   )
 }
-
-
-
-
-
-
-
-
