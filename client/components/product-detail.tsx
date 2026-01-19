@@ -307,15 +307,33 @@ export function ProductDetail({ product }: { product: Product }) {
                   </div>
                 </AccordionTrigger>
                 <AccordionContent>
-                  <a
-                    href="/docs/care-instructions.pdf"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--brand-coral)] hover:underline"
-                  >
-                    Open Care Instructions (PDF)
-                  </a>
-                  <p className="mt-2 text-sm text-muted-foreground">Opens in a new tab.</p>
+                  <div className="grid grid-cols-2 gap-3 max-w-md">
+                    {[
+                      { src: "/images/care-1.png", label: "Care instructions (Page 1)" },
+                      { src: "/images/care-2.png", label: "Care instructions (Page 2)" },
+                    ].map((item) => (
+                      <button
+                        key={item.src}
+                        type="button"
+                        onClick={() => setOpenChart(item)}
+                        className="text-left rounded-2xl border bg-white p-2 hover:shadow-sm transition"
+                        title="Click to expand"
+                      >
+                        <p className="text-[11px] font-medium text-muted-foreground mb-1">{item.label}</p>
+
+                        <div className="aspect-square w-full rounded-xl overflow-hidden bg-white border">
+                          <img
+                            src={item.src}
+                            alt={item.label}
+                            className="w-full h-full object-contain"
+                            loading="lazy"
+                          />
+                        </div>
+
+                        <p className="mt-1 text-[11px] text-muted-foreground">Tap to expand</p>
+                      </button>
+                    ))}
+                  </div>
                 </AccordionContent>
               </AccordionItem>
             </Accordion>

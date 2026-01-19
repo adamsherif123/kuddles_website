@@ -1,0 +1,2 @@
+components/ui/item.tsx:137:        'text-muted-foreground line-clamp-2 text-sm leading-normal font-normal text-balance',
+components/featured-products-hero.tsx:86:                  <p className="text-sm text-foreground/60 line-clamp-2">{product.description}</p>

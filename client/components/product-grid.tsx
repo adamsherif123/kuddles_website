@@ -71,8 +71,6 @@ export function ProductGrid({ products }: { products: Product[] }) {
                 {product.name}
               </h3>
 
-              <p className="text-sm text-foreground/60 line-clamp-2">{product.description}</p>
-
               <div className="flex items-center gap-2 pt-2">
                 <span className="text-lg font-bold text-[var(--brand-coral)]">
                   {formatMoneyEGP(product.price)}

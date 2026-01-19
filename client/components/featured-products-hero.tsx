@@ -83,7 +83,6 @@ export function FeaturedProductsHero({ products }: { products: Product[] }) {
                   <h3 className="text-xl font-semibold text-foreground group-hover:text-[var(--brand-blue-dark)] transition-colors">
                     {product.name}
                   </h3>
-                  <p className="text-sm text-foreground/60 line-clamp-2">{product.description}</p>
 
                   <div className="flex items-center gap-2 pt-2">
                     <span className="text-lg font-bold text-[var(--brand-coral)]">

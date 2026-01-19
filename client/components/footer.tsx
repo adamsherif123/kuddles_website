@@ -24,15 +24,6 @@ export function Footer() {
             {/* Social Media Links */}
             <div className="flex items-center gap-4 mt-8">
               <a
-                href="https://facebook.com/kuddles"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-10 h-10 bg-slate-800 hover:bg-[var(--brand-coral)] rounded-lg flex items-center justify-center transition-colors duration-200"
-                aria-label="Facebook"
-              >
-                <Facebook className="h-5 w-5" />
-              </a>
-              <a
                 href="https://www.instagram.com/kuddles.eg?igsh=dDE3MXU1MHhwN2po&utm_source=qr"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -40,15 +31,6 @@ export function Footer() {
                 aria-label="Instagram"
               >
                 <Instagram className="h-5 w-5" />
-              </a>
-              <a
-                href="https://twitter.com/kuddles"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-10 h-10 bg-slate-800 hover:bg-[var(--brand-coral)] rounded-lg flex items-center justify-center transition-colors duration-200"
-                aria-label="Twitter"
-              >
-                <Twitter className="h-5 w-5" />
               </a>
             </div>
           </div>
