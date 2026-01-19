@@ -2,6 +2,8 @@ import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import type { DrawerContentComponentProps } from '@react-navigation/drawer';
 import type { AdminDrawerParamList } from '../navigation/types';
+import { Platform } from 'react-native';
+import { signOut } from '../auth';
 
 const tabs: Array<{ label: string; route: keyof AdminDrawerParamList }> = [
   { label: 'Dashboard', route: 'Dashboard' },
@@ -36,7 +38,18 @@ export default function AdminSidebar({ navigation, state }: Props) {
       </View>
 
       <View style={styles.footer}>
-        <Text style={styles.footerText}>admin@kuddles.com</Text>
+  <Text style={styles.footerText}>admin@kuddles.com</Text>
+        <Pressable
+          onPress={() => {
+            signOut();
+            if (Platform.OS === 'web') {
+              window.location.reload();
+            }
+          }}
+          style={styles.logout}
+        >
+          <Text style={styles.logoutText}>Logout</Text>
+        </Pressable>
       </View>
     </View>
   );
@@ -59,4 +72,17 @@ const styles = StyleSheet.create({
   itemTextActive: { color: '#2563EB' },
   footer: { marginTop: 'auto', paddingVertical: 14, borderTopWidth: 1, borderTopColor: '#F0F0F4' },
   footerText: { color: '#6B7280', fontSize: 12 },
+  
+  logout: {
+    marginTop: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+  },
+  logoutText: {
+    color: '#DC2626', // red-600
+    fontWeight: '600',
+    fontSize: 14,
+  },
+  
 });
