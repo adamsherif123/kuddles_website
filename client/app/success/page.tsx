@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import SuccessClient from "@/app/checkout/success/CheckoutSuccessClient";
+import SuccessClient from "@/app//success/SuccessClient";
 
 export default function SuccessReturnPage() {
   return (
