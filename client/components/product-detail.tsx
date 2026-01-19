@@ -35,6 +35,8 @@ export function ProductDetail({ product }: { product: Product }) {
   const [quantity, setQuantity] = useState(1)
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
 
+  const [openChart, setOpenChart] = useState<null | { src: string; label: string }>(null)
+
   const { addItem, setIsCartOpen } = useCart()
 
   const selectedSizeData = safeSizes.find((s: any) => s.label === selectedSize)
@@ -105,12 +107,12 @@ export function ProductDetail({ product }: { product: Product }) {
               className="opacity-10"
             />
 
-            <div className="relative aspect-square rounded-2xl overflow-hidden bg-muted mb-4">
+            <div className="relative aspect-square rounded-2xl overflow-hidden bg-white border mb-4">
               <Image
                 src={currentImage.url || "/placeholder.svg"}
                 alt={product.name}
                 fill
-                className="object-cover"
+                className="object-contain"
                 priority
               />
             </div>
@@ -233,6 +235,77 @@ export function ProductDetail({ product }: { product: Product }) {
                 <Heart className="h-5 w-5" />
               </Button>
             </div>
+        
+            {/* Size chart */}
+            <div className="mb-8">
+              <p className="text-sm font-semibold mb-3">Size charts</p>
+
+              <div className="grid grid-cols-3 gap-4 max-w-md">
+                {[
+                  { src: "/images/size-chart1.png", label: "Sweaters size chart" },
+                  { src: "/images/size-chart2.png", label: "Pants size chart" },
+                ].map((item) => (
+                  <button
+                    key={item.src}
+                    type="button"
+                    onClick={() => setOpenChart(item)}
+                    className="text-left rounded-2xl border bg-white p-2 hover:shadow-sm transition"
+                    title="Click to expand"
+                  >
+                    <p className="text-[11px] font-medium text-muted-foreground mb-1">{item.label}</p>
+
+                    {/* Smaller preview */}
+                    <div className="aspect-square w-full rounded-xl overflow-hidden bg-white border">
+                      <img
+                        src={item.src}
+                        alt={item.label}
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+
+                    <p className="mt-1 text-[11px] text-muted-foreground">Tap to expand</p>
+                  </button>
+                ))}
+              </div>
+
+              {/* Lightbox modal */}
+              {openChart && (
+                <div
+                  className="fixed inset-0 z-[999] bg-black/60 flex items-center justify-center p-4"
+                  onClick={() => setOpenChart(null)}
+                  role="dialog"
+                  aria-modal="true"
+                >
+                  <div
+                    className="relative w-full max-w-4xl rounded-2xl bg-white p-3"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setOpenChart(null)}
+                      className="absolute right-3 top-3 rounded-full border bg-white px-3 py-1 text-sm"
+                    >
+                      ✕
+                    </button>
+
+                    <p className="text-sm font-semibold mb-2 pr-10">{openChart.label}</p>
+
+                    <div className="flex items-center justify-center">
+                      <img
+                        src={openChart.src}
+                        alt={openChart.label}
+                        className="max-h-[85vh] max-w-[90vw] object-contain"
+                      />
+                    </div>
+
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      Click outside (or ✕) to close.
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+
 
             {/* Additional Info */}
             <Accordion type="single" collapsible className="w-full">
@@ -244,12 +317,12 @@ export function ProductDetail({ product }: { product: Product }) {
                   </div>
                 </AccordionTrigger>
                 <AccordionContent>
-                  <div className="text-sm text-muted-foreground space-y-2">
-                    <p>• Free standard shipping on orders over $50</p>
-                    <p>• Express shipping available at checkout</p>
-                    <p>• 30-day return policy</p>
-                  </div>
-                </AccordionContent>
+                <div className="text-sm text-muted-foreground space-y-2">
+                  <p>• Free standard shipping</p>
+                  <p>• 2-5 business days</p>
+                  <p>• 30-day return policy</p>
+                </div>
+              </AccordionContent>
               </AccordionItem>
               <AccordionItem value="care">
                 <AccordionTrigger>
@@ -259,12 +332,17 @@ export function ProductDetail({ product }: { product: Product }) {
                   </div>
                 </AccordionTrigger>
                 <AccordionContent>
-                  <div className="text-sm text-muted-foreground space-y-2">
-                    <p>• Washing: Cold wash (&lt;30°C) inside out, gentle cycle, no bleach or softener</p>
-                    <p>• Drying: Air dry in shade, lay flat or hang</p>
-                    <p>• Ironing: Low heat inside out, don't iron print</p>
-                    <p>• Wear: Avoid rough surfaces, handle gently</p>
-                  </div>
+                  <a
+                    href="/docs/care-instructions.pdf"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--brand-coral)] hover:underline"
+                  >
+                    Open Care Instructions (PDF)
+                  </a>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Opens in a new tab.
+                  </p>
                 </AccordionContent>
               </AccordionItem>
             </Accordion>

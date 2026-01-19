@@ -79,3 +79,4 @@ coverage/
 # Misc
 *.bak
 *.backup
+.vercel
