@@ -262,7 +262,7 @@ export function ProductDetail({ product }: { product: Product }) {
                   <div className="text-sm text-muted-foreground space-y-2">
                     <p>• Washing: Cold wash (&lt;30°C) inside out, gentle cycle, no bleach or softener</p>
                     <p>• Drying: Air dry in shade, lay flat or hang</p>
-                    <p>• Ironing: Low heat inside out, don’t iron print</p>
+                    <p>• Ironing: Low heat inside out, don't iron print</p>
                     <p>• Wear: Avoid rough surfaces, handle gently</p>
                   </div>
                 </AccordionContent>
