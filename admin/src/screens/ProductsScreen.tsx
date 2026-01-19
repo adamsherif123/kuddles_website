@@ -9,10 +9,11 @@ import {
   ActivityIndicator,
   Image,
   Platform,
+  Alert,
 } from 'react-native';
 
 import SheetModal from '../components/SheetModal';
-import { createProduct, listProducts, updateProduct } from '../services/products';
+import { createProduct, listAllProducts, updateProduct, deleteProduct } from '../services/products';
 import { uploadProductImages } from '../services/uploads';
 import type { Product, NewProductInput } from '../types/product';
 
@@ -102,7 +103,7 @@ export default function ProductsScreen() {
     setLoading(true);
     setError(null);
     try {
-      const next = await listProducts();
+      const next = await listAllProducts();
       setProducts(next);
     } catch (e: any) {
       setError(e?.message ?? 'Failed to load products');
@@ -240,7 +241,6 @@ export default function ProductsScreen() {
   }
 
   function removePickedAt(index: number) {
-    const file = pickedFiles[index];
     const prev = pickedPreviews[index];
 
     if (Platform.OS === 'web' && prev) {
@@ -256,6 +256,38 @@ export default function ProductsScreen() {
   function removeExistingUrl(url: string) {
     // Note: this only removes from Firestore list; it does not delete from Storage yet.
     setImageUrls((prev) => prev.filter((u) => u !== url));
+  }
+
+  async function onDelete() {
+    if (!editingId) return;
+
+    Alert.alert(
+      'Delete product?',
+      'This will permanently delete this product. This cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              setLoading(true);
+              setError(null);
+
+              await deleteProduct(editingId);
+
+              await refreshProducts();
+              setOpen(false);
+              resetForm();
+            } catch (e: any) {
+              setError(e?.message ?? 'Failed to delete product');
+            } finally {
+              setLoading(false);
+            }
+          },
+        },
+      ]
+    );
   }
 
   async function onSubmit() {
@@ -586,13 +618,7 @@ export default function ProductsScreen() {
             {Platform.OS === 'web' ? (
               <View style={{ marginTop: 10 }}>
                 {/* @ts-ignore */}
-                <input
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  onChange={onPickImagesWeb}
-                  style={{ marginBottom: 12 }}
-                />
+                <input type="file" accept="image/*" multiple onChange={onPickImagesWeb} style={{ marginBottom: 12 }} />
 
                 {pickedPreviews.length > 0 ? (
                   <>
@@ -644,9 +670,20 @@ export default function ProductsScreen() {
               setOpen(false);
               resetForm();
             }}
+            disabled={loading}
           >
             <Text style={styles.ghostBtnText}>Cancel</Text>
           </Pressable>
+
+          {isEditMode ? (
+            <Pressable
+              style={({ pressed }) => [styles.dangerBtn, pressed && { opacity: 0.85 }]}
+              onPress={onDelete}
+              disabled={loading}
+            >
+              <Text style={styles.dangerBtnText}>Delete product</Text>
+            </Pressable>
+          ) : null}
 
           <Pressable
             style={({ pressed }) => [
@@ -692,7 +729,14 @@ const styles = StyleSheet.create({
   },
   secondaryBtnText: { color: '#111827', fontWeight: '800', fontSize: 13 },
 
-  errorBox: { marginTop: 14, backgroundColor: '#FEF2F2', borderWidth: 1, borderColor: '#FECACA', padding: 12, borderRadius: 12 },
+  errorBox: {
+    marginTop: 14,
+    backgroundColor: '#FEF2F2',
+    borderWidth: 1,
+    borderColor: '#FECACA',
+    padding: 12,
+    borderRadius: 12,
+  },
   errorText: { color: '#991B1B', fontWeight: '700' },
 
   card: { marginTop: 16, backgroundColor: '#FFFFFF', borderRadius: 16, padding: 16, borderWidth: 1, borderColor: '#E9E9EE' },
@@ -714,7 +758,15 @@ const styles = StyleSheet.create({
 
   rowTop: { flexDirection: 'row', alignItems: 'center', gap: 12 },
 
-  thumbWrap: { width: 44, height: 44, borderRadius: 12, overflow: 'hidden', borderWidth: 1, borderColor: '#E5E7EB', backgroundColor: '#F9FAFB' },
+  thumbWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    backgroundColor: '#F9FAFB',
+  },
   thumb: { width: 44, height: 44 },
   thumbEmpty: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   thumbEmptyText: { fontSize: 10, fontWeight: '900', color: '#9CA3AF' },
@@ -785,7 +837,16 @@ const styles = StyleSheet.create({
 
   selectedRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 12, alignItems: 'center' },
 
-  imagePlaceholder: { marginTop: 10, height: 92, borderRadius: 14, borderWidth: 1, borderColor: '#E5E7EB', backgroundColor: '#F9FAFB', alignItems: 'center', justifyContent: 'center' },
+  imagePlaceholder: {
+    marginTop: 10,
+    height: 92,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    backgroundColor: '#F9FAFB',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 
   previewRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: 10 },
   previewWrap: { position: 'relative' as any },
@@ -809,6 +870,19 @@ const styles = StyleSheet.create({
 
   ghostBtn: { paddingVertical: 10, paddingHorizontal: 12, borderRadius: 12, backgroundColor: '#F3F4F6' },
   ghostBtnText: { fontWeight: '900', color: '#111827' },
+
+  dangerBtn: {
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    backgroundColor: '#FEF2F2',
+    borderWidth: 1,
+    borderColor: '#FECACA',
+  },
+  dangerBtnText: {
+    fontWeight: '900',
+    color: '#991B1B',
+  },
 
   submitBtn: { backgroundColor: '#2563EB', paddingVertical: 10, paddingHorizontal: 14, borderRadius: 12, minWidth: 160, alignItems: 'center', justifyContent: 'center' },
   submitBtnText: { color: 'white', fontWeight: '900' },
