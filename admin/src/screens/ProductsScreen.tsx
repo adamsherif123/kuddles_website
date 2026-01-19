@@ -260,34 +260,37 @@ export default function ProductsScreen() {
 
   async function onDelete() {
     if (!editingId) return;
-
-    Alert.alert(
-      'Delete product?',
-      'This will permanently delete this product. This cannot be undone.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              setLoading(true);
-              setError(null);
-
-              await deleteProduct(editingId);
-
-              await refreshProducts();
-              setOpen(false);
-              resetForm();
-            } catch (e: any) {
-              setError(e?.message ?? 'Failed to delete product');
-            } finally {
-              setLoading(false);
-            }
-          },
-        },
-      ]
-    );
+  
+    const confirmed =
+      Platform.OS === 'web'
+        ? window.confirm('Delete this product permanently? This cannot be undone.')
+        : await new Promise<boolean>((resolve) => {
+            Alert.alert(
+              'Delete product?',
+              'This will permanently delete this product. This cannot be undone.',
+              [
+                { text: 'Cancel', style: 'cancel', onPress: () => resolve(false) },
+                { text: 'Delete', style: 'destructive', onPress: () => resolve(true) },
+              ]
+            );
+          });
+  
+    if (!confirmed) return;
+  
+    try {
+      setLoading(true);
+      setError(null);
+  
+      await deleteProduct(editingId);
+  
+      await refreshProducts();
+      setOpen(false);
+      resetForm();
+    } catch (e: any) {
+      setError(e?.message ?? 'Failed to delete product');
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function onSubmit() {
